@@ -1,0 +1,40 @@
+# =============================================================================
+# simple-vpn .gitignore
+# =============================================================================
+
+# --- Private / local dev scripts (contain hardcoded test keys/endpoints) ---
+.dev/
+
+# --- Social media drafts (working files, not published content) ---
+.drafts/
+
+# --- WireGuard private keys ---
+*.key
+*.pem
+*.p12
+
+# --- WireGuard runtime configs (may contain private keys) ---
+/etc/wireguard/
+
+# --- Generated client/server config (lives in ~/.simple-vpn/ at runtime) ---
+# These are created on the user's machine at runtime — never committed.
+# Documenting here for clarity.
+# ~/.simple-vpn/
+
+# --- Environment / credential files ---
+.env
+.env.*
+!.env.example
+
+# --- Claude Code local settings (machine-specific) ---
+.claude/settings.local.json
+
+# --- Editor / OS artifacts ---
+.DS_Store
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# --- VS Code workspace (personal config, not needed in repo) ---
+*.code-workspace
