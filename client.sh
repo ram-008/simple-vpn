@@ -60,6 +60,13 @@ check_wireguard() {
 
 # --- Input Validation --------------------------------------------------------
 
+validate_interface_name() {
+    local iface="$1"
+    if [[ ! "$iface" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+        error "Detected network interface name contains unsafe characters: '$iface'."
+    fi
+}
+
 validate_pubkey() {
     local key="$1" label="${2:-public key}"
     # WireGuard public keys are exactly 44-character base64 strings (32 bytes + '=' padding)
@@ -295,6 +302,7 @@ show_status() {
     local actual_interface="$WG_INTERFACE"
     if [[ "$OS" == "macos" ]]; then
         actual_interface=$(wg show interfaces 2>/dev/null | tr ' ' '\n' | head -1)
+        [[ -n "$actual_interface" ]] && validate_interface_name "$actual_interface"
     fi
 
     if [[ -n "$actual_interface" ]] && sudo wg show "$actual_interface" &>/dev/null; then

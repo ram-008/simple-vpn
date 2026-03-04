@@ -299,6 +299,7 @@ EOF
             warn "Could not detect running interface. Using $WG_INTERFACE"
             actual_interface="$WG_INTERFACE"
         fi
+        validate_interface_name "$actual_interface"
     fi
 
     wg set "$actual_interface" peer "$client_pubkey" allowed-ips "${client_ip}/32"
@@ -318,6 +319,7 @@ show_status() {
     local actual_interface="$WG_INTERFACE"
     if [[ "$OS" == "macos" ]]; then
         actual_interface=$(wg show interfaces 2>/dev/null | tr ' ' '\n' | head -1)
+        [[ -n "$actual_interface" ]] && validate_interface_name "$actual_interface"
     fi
 
     if [[ -n "$actual_interface" ]] && wg show "$actual_interface" &>/dev/null; then
