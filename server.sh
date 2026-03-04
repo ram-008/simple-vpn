@@ -82,7 +82,46 @@ detect_public_interface() {
         warn "Could not auto-detect public interface. Using 'eth0' as fallback."
         PUBLIC_IFACE="eth0"
     fi
+
+    # Validate the interface name before it is embedded in shell commands
+    # inside the WireGuard config (PostUp/PostDown).  A name containing shell
+    # metacharacters would allow command injection when wg-quick runs those hooks.
+    validate_interface_name "$PUBLIC_IFACE"
+
     info "Public network interface: $PUBLIC_IFACE"
+}
+
+# --- Input Validation --------------------------------------------------------
+
+validate_pubkey() {
+    local key="$1" label="${2:-public key}"
+    # WireGuard public keys are exactly 44-character base64 strings (32 bytes + '=' padding)
+    if [[ ! "$key" =~ ^[A-Za-z0-9+/]{43}=$ ]]; then
+        error "Invalid WireGuard $label: '$key'. Expected a 44-character base64 string."
+    fi
+}
+
+validate_ipv4() {
+    local input="$1" label="${2:-IP address}"
+    local addr="${input%%/*}"   # strip optional CIDR suffix
+    if [[ ! "$addr" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+        error "Invalid $label: '$addr'."
+    fi
+    IFS='.' read -ra octets <<< "$addr"
+    for octet in "${octets[@]}"; do
+        if (( octet > 255 )); then
+            error "Invalid $label: '$addr' (octet $octet out of range)."
+        fi
+    done
+}
+
+validate_interface_name() {
+    local iface="$1"
+    # Interface names must not contain shell metacharacters — they are embedded
+    # in PostUp/PostDown commands that wg-quick executes as a shell.
+    if [[ ! "$iface" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+        error "Detected network interface name contains unsafe characters: '$iface'."
+    fi
 }
 
 # --- Key Generation ----------------------------------------------------------
@@ -228,6 +267,12 @@ start_interface() {
 add_peer() {
     local client_pubkey="$1"
     local client_ip="$2"
+
+    # Validate inputs before writing them into the WireGuard config file.
+    # Unvalidated values written via heredoc could inject arbitrary directives
+    # (e.g. PostUp) that wg-quick executes as root.
+    validate_pubkey "$client_pubkey" "client public key"
+    validate_ipv4   "$client_ip"    "client VPN IP"
 
     # Each client (peer) needs:
     #   PublicKey  — the client's public key (they generate this)

@@ -27,7 +27,12 @@
 !.env.example
 
 # --- Claude Code local settings (machine-specific) ---
-.claude/settings.local.json
+# Exclude the entire .claude/ directory — it can contain memory files, project
+# settings, and other machine-specific data that should not be committed.
+.claude/
+
+# --- Local documentation drafts / notes (may contain personal info) ---
+.docs/
 
 # --- Editor / OS artifacts ---
 .DS_Store
