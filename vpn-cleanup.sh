@@ -14,18 +14,22 @@ echo "  Stopping All VPN Interfaces"
 echo "=========================================="
 echo ""
 
-# Stop client interface
-if sudo wg-quick down wg0 2>/dev/null; then
-    ok "Client interface stopped (wg0)"
-else
-    warn "Client interface was not running"
-fi
+# Enumerate all running WireGuard interfaces and stop each one.
+# Previously this block hard-coded wg0 twice, so the second call always
+# failed because the first already brought the interface down.
+info "Detecting running WireGuard interfaces..."
+mapfile -t running_ifaces < <(wg show interfaces 2>/dev/null | tr ' ' '\n' | grep -v '^$' || true)
 
-# Stop server interface
-if sudo wg-quick down wg0 2>/dev/null; then
-    ok "Server interface stopped (wg0)"
+if [[ ${#running_ifaces[@]} -eq 0 ]]; then
+    warn "No WireGuard interfaces are currently running."
 else
-    warn "Server interface was not running"
+    for iface in "${running_ifaces[@]}"; do
+        if sudo wg-quick down "$iface" 2>/dev/null; then
+            ok "Interface stopped: $iface"
+        else
+            warn "Could not stop interface: $iface"
+        fi
+    done
 fi
 
 echo ""
@@ -37,9 +41,10 @@ else
     warn "Still running: $remaining"
     echo ""
     echo "To manually stop:"
-    for iface in $remaining; do
-        echo "  sudo wg-quick down $iface"
-    done
+    # Read into an array to avoid word-splitting on unusual interface names
+    while IFS= read -r iface; do
+        [[ -n "$iface" ]] && echo "  sudo wg-quick down $iface"
+    done < <(echo "$remaining" | tr ' ' '\n')
 fi
 
 echo ""
