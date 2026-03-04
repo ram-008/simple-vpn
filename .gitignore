@@ -5,7 +5,7 @@
 # --- Private / local dev scripts (contain hardcoded test keys/endpoints) ---
 .dev/
 
-# --- Social media drafts (working files, not published content) ---
+# --- Local drafts (working files, not published content) ---
 .drafts/
 
 # --- WireGuard private keys ---
