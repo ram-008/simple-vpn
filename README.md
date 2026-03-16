@@ -121,7 +121,7 @@ Install WireGuard tools for your OS:
 
 ```bash
 # Ubuntu / Debian
-sudo apt install wireguard
+sudo apt install wireguard iptables openresolv
 
 # Fedora
 sudo dnf install wireguard-tools
@@ -159,6 +159,8 @@ On your laptop or any other device:
 ./vpn.sh client-setup <server-public-key> <server-ip>:51820 10.0.0.2/24 split
 ```
 
+Use your server's **public IP** (not the VPN IP `10.0.0.1`) as `<server-ip>`. You can find it in your VPS provider's dashboard.
+
 Note the **client public key** printed at the end.
 
 ### 3. Register the Client on the Server
@@ -178,6 +180,8 @@ On the client:
 ```bash
 ./vpn.sh connect
 ```
+
+> Note: `connect` and `disconnect` invoke `sudo` internally to manage the network interface. You will be prompted for your password.
 
 ### 5. Verify
 
@@ -241,6 +245,10 @@ sudo ./vpn.sh add-peer <client2-pubkey> 10.0.0.3
 **"WireGuard tools not found"** — Install `wireguard-tools` for your OS (see Prerequisites).
 
 **"Server setup requires root"** — Run with `sudo`: `sudo ./vpn.sh server-setup`.
+
+**"iptables: command not found"** — `wg-quick` requires `iptables` for NAT on Linux. Install it: `sudo apt install iptables` (Ubuntu/Debian) or `sudo dnf install iptables` (Fedora).
+
+**"resolvconf: command not found"** — Full tunnel mode sets DNS via `resolvconf`, which is not installed by default on some distros. Install it: `sudo apt install openresolv` (Ubuntu/Debian). Alternatively, use split tunnel mode (`split` argument to `client-setup`) which does not modify DNS.
 
 **Client can't connect:**
 

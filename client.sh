@@ -339,7 +339,7 @@ main() {
             echo ""
             echo "  Next steps:"
             echo "  1. Give your public key to the server admin"
-            echo "  2. Run: ./client.sh connect"
+            echo "  2. Run: ./vpn.sh connect"
             echo ""
             echo "========================================"
             ;;
