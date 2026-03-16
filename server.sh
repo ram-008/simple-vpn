@@ -361,7 +361,7 @@ main() {
             echo "  to connect."
             echo ""
             echo "  Add peers with:"
-            echo "    sudo ./server.sh add-peer <pubkey> <vpn-ip>"
+            echo "    sudo ./vpn.sh add-peer <pubkey> <vpn-ip>"
             echo ""
             echo "========================================"
             ;;
